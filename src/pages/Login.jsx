@@ -37,7 +37,7 @@ const handleSubmit = async (e) => {
   if (!validate()) return;
 
   try {
-    const res = await fetch(`${API_URL}/api/auth/login`, {
+    const res = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, clave })

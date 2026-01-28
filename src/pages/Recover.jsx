@@ -1,40 +1,53 @@
-// src/pages/Recover.jsx
+import { useState } from "react";
+import { recoverAccount } from "../services/auth";
+
 export default function Recover() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError(null);
+    setSuccess(false);
+    setLoading(true);
+
+    try {
+      await recoverAccount(email);
+      setSuccess(true);
+    } catch (err) {
+      setError("No se pudo enviar el enlace de recuperación");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <section className="page auth-page">
-      <div className="login-header-logo">
-        <div className="logo-circle">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="26"
-            height="26"
-            fill="none"
-            stroke="#5b8dff"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M2 12h20" />
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-          </svg>
-        </div>
-
-        <span className="logo-text">pulse</span>
-      </div>
-
       <h2>RECUPERAR CUENTA</h2>
       <p>Envía tu correo electrónico para mandar enlace de recuperación.</p>
 
-      <form className="card auth-form">
+      <form className="card auth-form" onSubmit={handleSubmit}>
         <label>
           Email
-          <input type="email" placeholder="Ingresa tu correo electrónico" />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </label>
 
-        <button type="submit" className="btn-primary full-width">
-          Enviar
+        {error && <p className="error">{error}</p>}
+        {success && <p className="success">Revisa tu correo 📩</p>}
+
+        <button
+          type="submit"
+          className="btn-primary full-width"
+          disabled={loading}
+        >
+          {loading ? "Enviando..." : "Enviar"}
         </button>
       </form>
     </section>

@@ -3,15 +3,28 @@ import { apiFetch } from "../services/api";
 
 export default function AdminBoard() {
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    apiFetch("http://localhost:4000/api/incidencias")
-      .then(setData)
-      .catch(err => console.error(err));
+    loadIncidencias();
   }, []);
+
+  async function loadIncidencias() {
+    try {
+      const res = await apiFetch("/incidencias");
+      setData(res || []);
+    } catch (err) {
+      console.error(err);
+      setError("Error cargando incidencias");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <section className="page">
+      {/* HEADER SIEMPRE VISIBLE */}
       <div className="page-header page-header-left">
         <h1>Panel administrador</h1>
         <p>
@@ -32,24 +45,56 @@ export default function AdminBoard() {
               <th>Última actualización</th>
             </tr>
           </thead>
-          <tbody>
-            {data.map((row) => (
-              <tr key={row.id}>
-                <td>{row.id}</td>
-                <td>{row.tecnico || "Sin asignar"}</td>
-                <td>{row.cliente}</td>
-                <td>{row.titulo}</td>
-                <td>{row.estado}</td>
-                <td>{row.fecha}</td>
-              </tr>
-            ))}
 
-            {/* Relleno visual */}
-            {Array.from({ length: 4 }).map((_, i) => (
-              <tr key={"empty-" + i}>
-                <td colSpan="6">&nbsp;</td>
+          <tbody>
+            {/* LOADING */}
+            {loading && (
+              <tr>
+                <td colSpan="6" style={{ textAlign: "center" }}>
+                  Cargando incidencias...
+                </td>
               </tr>
-            ))}
+            )}
+
+            {/* ERROR */}
+            {!loading && error && (
+              <tr>
+                <td colSpan="6" className="error" style={{ textAlign: "center" }}>
+                  {error}
+                </td>
+              </tr>
+            )}
+
+            {/* SIN DATOS */}
+            {!loading && !error && data.length === 0 && (
+              <tr>
+                <td colSpan="6" style={{ textAlign: "center" }}>
+                  No hay incidencias registradas
+                </td>
+              </tr>
+            )}
+
+            {/* DATOS */}
+            {!loading &&
+              !error &&
+              data.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.id}</td>
+                  <td>{row.tecnico || "Sin asignar"}</td>
+                  <td>{row.cliente}</td>
+                  <td>{row.titulo}</td>
+                  <td>
+                    <span
+                      className={`estado estado-${row.estado
+                        .toLowerCase()
+                        .replace(" ", "-")}`}
+                    >
+                      {row.estado}
+                    </span>
+                  </td>
+                  <td>{row.fecha}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>

@@ -21,7 +21,7 @@ router.post("/register", async (req, res) => {
       `INSERT INTO usuarios 
        (nombre, apellido, telefono, email, clave, rol_id)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [nombre, apellido, telefono || null, email, hash, rolId]
+      [nombre, apellido, telefono || null, email, hash, 3]
     );
 
     res.json({ message: "Usuario registrado correctamente" });
@@ -78,5 +78,46 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
+
+// RECUPERAR CUENTA
+router.post("/recover", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: "Email requerido" });
+  }
+
+  try {
+    const [users] = await db.query(
+      "SELECT id FROM usuarios WHERE email = ?",
+      [email]
+    );
+
+return res.json({
+  message: "Si el correo existe, se enviará un enlace de recuperación",
+});
+
+
+    // token simple (demo)
+    const token = crypto.randomBytes(20).toString("hex");
+
+    // opcional: guardar token en DB
+    await db.query(
+      "UPDATE usuarios SET reset_token = ?, reset_expira = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = ?",
+      [token, email]
+    );
+
+    console.log("🔐 Token de recuperación (demo):", token);
+
+    res.json({
+      success: true,
+      message: "Se ha enviado un enlace de recuperación (simulado)"
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al recuperar cuenta" });
+  }
+});
+
 
 export default router;

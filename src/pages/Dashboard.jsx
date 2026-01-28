@@ -10,11 +10,11 @@ export default function Dashboard() {
 
   const [recientes, setRecientes] = useState([]);
   useEffect(() => {
-    apiFetch("http://localhost:4000/api/incidencias/stats")
+    apiFetch("/incidencias/stats")
       .then(setStats)
       .catch((err) => console.error("Error cargando stats:", err));
 
-    apiFetch("http://localhost:4000/api/incidencias/recientes")
+    apiFetch("/incidencias/recientes")
       .then(setRecientes)
       .catch((err) =>
         console.error("Error cargando incidencias recientes:", err)

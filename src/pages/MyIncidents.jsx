@@ -13,7 +13,7 @@ export default function MyIncidents() {
   useEffect(() => {
     if (!user) return;
 
-    apiFetch("http://localhost:4000/api/incidencias")
+    apiFetch("/incidencias")
       .then(setIncidents)
       .catch(err => console.error("Error cargando incidencias:", err));
   }, [user]);

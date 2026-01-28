@@ -6,34 +6,26 @@ import bcrypt from "bcryptjs";
 const router = express.Router();
 
 /* PERFIL DEL USUARIO LOGUEADO */
-router.get("/", authMiddleware([1]), async (req, res) => {
-  res.json({
-    message: "Ruta protegida OK",
-    user: req.user
-  });
+router.get("/me", authMiddleware, (req, res) => {
+  res.json(req.user);
 });
 
-/* LISTAR USUARIOS (SOLO ADMIN) */
+/* LISTAR USUARIOS (ADMIN) */
 router.get("/", authMiddleware([1]), async (req, res) => {
-  try {
-    const [rows] = await db.query(`
-      SELECT 
-        u.id,
-        u.nombre,
-        u.apellido,
-        u.email,
-        u.telefono,
-        r.nombre AS rol
-      FROM usuarios u
-      JOIN roles r ON r.id = u.rol_id
-      ORDER BY u.creado DESC
-    `);
+  const [rows] = await db.query(`
+    SELECT 
+      u.id,
+      u.nombre,
+      u.apellido,
+      u.email,
+      u.telefono,
+      r.nombre AS rol
+    FROM usuarios u
+    JOIN roles r ON r.id = u.rol_id
+    ORDER BY u.creado DESC
+  `);
 
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error obteniendo usuarios" });
-  }
+  res.json(rows);
 });
 
 /* CREAR USUARIO (ADMIN) */
@@ -42,6 +34,11 @@ router.post("/", authMiddleware([1]), async (req, res) => {
 
   if (!nombre || !apellido || !email || !clave || !rol_id) {
     return res.status(400).json({ error: "Datos incompletos" });
+  }
+
+  const rolesPermitidos = [2, 3]; // tecnico, usuario
+  if (!rolesPermitidos.includes(rol_id)) {
+    return res.status(400).json({ error: "Rol no válido" });
   }
 
   try {
@@ -101,6 +98,18 @@ router.delete("/:id", authMiddleware([1]), async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error eliminando usuario" });
+  }
+});
+
+/* OBTENER TECNICOS (ADMIN) */
+router.get("/tecnicos", authMiddleware([1]), async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT id, nombre, email FROM usuarios WHERE rol_id = 2"
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: "Error obteniendo técnicos" });
   }
 });
 

@@ -6,6 +6,7 @@ import { AuthContext } from "../App";
 export default function Navbar() {
   const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
+const [openMobileMenu, setOpenMobileMenu] = useState(false);
 
   const [openUserMenu, setOpenUserMenu] = useState(false);
   const menuRef = useRef(null);
@@ -67,92 +68,92 @@ export default function Navbar() {
 
   return (
     <header className="navbar">
-      <div className="navbar-left" onClick={handleLogoClick}>
-        <div className="logo-icon">🌐</div>
-        <span className="logo-text">pulse</span>
-      </div>
+  {/* LOGO */}
+  <div className="navbar-left" onClick={handleLogoClick}>
+    <div className="logo-icon">🌐</div>
+    <span className="logo-text">pulse</span>
+  </div>
 
-      {/* MENÚ (sin cambios) */}
-      <nav className="navbar-links">
-        {!isLoggedIn ? (
+  {/* BOTÓN HAMBURGUESA (MOBILE) */}
+  <button
+    className="navbar-toggle"
+    onClick={() => setOpenMobileMenu((s) => !s)}
+  >
+    {openMobileMenu ? "✕" : "☰"}
+  </button>
+
+  {/* LINKS */}
+  <nav className={`navbar-links ${openMobileMenu ? "open" : ""}`}>
+    {!isLoggedIn ? (
+      <>
+        <NavLink to="/" end onClick={() => setOpenMobileMenu(false)}>Home</NavLink>
+        <NavLink to="/nosotros" onClick={() => setOpenMobileMenu(false)}>Nosotros</NavLink>
+        <NavLink to="/servicios" onClick={() => setOpenMobileMenu(false)}>Servicios</NavLink>
+        <NavLink to="/contacto" onClick={() => setOpenMobileMenu(false)}>Contacto</NavLink>
+      </>
+    ) : (
+      <>
+        {rol === "usuario" && (
+          <NavLink to="/mis-incidencias" onClick={() => setOpenMobileMenu(false)}>
+            Home
+          </NavLink>
+        )}
+
+        {rol === "tecnico" && (
           <>
-            <NavLink to="/" end>Home</NavLink>
-            <NavLink to="/nosotros">Nosotros</NavLink>
-            <NavLink to="/servicios">Servicios</NavLink>
-            <NavLink to="/contacto">Contacto</NavLink>
-          </>
-        ) : (
-          <>
-            {rol === "usuario" && (
-              <NavLink to="/mis-incidencias">Home</NavLink>
-            )}
-
-            {rol === "tecnico" && (
-              <>
-                <NavLink to="/dashboard" end>Home</NavLink>
-                <NavLink to="/panel-tecnico">Panel técnico</NavLink>
-              </>
-            )}
-
-            {rol === "admin" && (
-              <>
-                <NavLink to="/dashboard" end>Home</NavLink>
-                <NavLink to="/panel-admin">Panel</NavLink>
-                <NavLink to="/users">Usuarios</NavLink>
-              </>
-            )}
+            <NavLink to="/dashboard" end onClick={() => setOpenMobileMenu(false)}>
+              Home
+            </NavLink>
+            <NavLink to="/panel-tecnico" onClick={() => setOpenMobileMenu(false)}>
+              Panel técnico
+            </NavLink>
           </>
         )}
-      </nav>
 
-      {/* ZONA DERECHA */}
-      <div className="navbar-right" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        
-        {/* ICONO DE USUARIO */}
-        {isLoggedIn && (
-          <div ref={menuRef} className="user-menu-container" style={{ position: "relative" }}>
-            
-            <button
-              className="user-icon-btn"
-              onClick={() => setOpenUserMenu((s) => !s)}
-              style={{ background: "none", border: "none", cursor: "pointer" }}
-            >
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-            </button>
+        {rol === "admin" && (
+          <>
+            <NavLink to="/dashboard" end onClick={() => setOpenMobileMenu(false)}>
+              Home
+            </NavLink>
+            <NavLink to="/panel-admin" onClick={() => setOpenMobileMenu(false)}>
+              Panel
+            </NavLink>
+            <NavLink to="/users" onClick={() => setOpenMobileMenu(false)}>
+              Usuarios
+            </NavLink>
+          </>
+        )}
+      </>
+    )}
+  </nav>
 
-            {/* DROPDOWN */}
-            {openUserMenu && (
-              <div
-                className="user-dropdown"
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  top: 40,
-                  background: "#fff",
-                  borderRadius: 8,
-                  padding: "10px 14px",
-                  boxShadow: "0 6px 20px rgba(0,0,0,0.15)",
-                  minWidth: 160,
-                  textAlign: "center",   // <-- centrado como pediste
-                  zIndex: 1000
-                }}
-              >
-                <strong style={{ display: "block" }}>{displayName}</strong>
-              </div>
-            )}
+  {/* DERECHA */}
+  <div className="navbar-right">
+    {isLoggedIn && (
+      <div ref={menuRef} className="user-menu-container">
+        <button
+          className="user-icon-btn"
+          onClick={() => setOpenUserMenu((s) => !s)}
+        >
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </button>
 
+        {openUserMenu && (
+          <div className="user-dropdown">
+            <strong>{displayName}</strong>
           </div>
         )}
-
-        {/* LOGIN / LOGOUT */}
-        <button className="navbar-login" onClick={handleLoginClick}>
-          {isLoggedIn ? LogoutIcon : LoginIcon}
-        </button>
       </div>
-    </header>
+    )}
+
+    <button className="navbar-login" onClick={handleLoginClick}>
+      {isLoggedIn ? LogoutIcon : LoginIcon}
+    </button>
+  </div>
+</header>
   );
 }

@@ -12,7 +12,13 @@ export default function authMiddleware(roles = []) {
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      decoded.rol_id = Number(decoded.rol_id);
+
       req.user = decoded;
+
+      console.log("TOKEN DECODIFICADO:", decoded);
+console.log("ROLES PERMITIDOS:", roles);
 
       if (roles.length && !roles.includes(decoded.rol_id)) {
         return res.status(403).json({ error: "Acceso denegado" });

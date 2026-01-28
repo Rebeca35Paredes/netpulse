@@ -37,7 +37,7 @@ export default function ReportIssue() {
     if (!validate()) return;
 
     try {
-      const res = await fetch("http://localhost:4000/api/incidencias/crear", {
+      const res = await fetch("/incidencias/crear", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

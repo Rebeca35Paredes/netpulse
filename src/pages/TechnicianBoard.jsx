@@ -1,18 +1,52 @@
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../App";
+import { useEffect, useState } from "react";
 import { apiFetch } from "../services/api";
 
 export default function TechnicianBoard() {
-  const { user } = useContext(AuthContext);
   const [assigned, setAssigned] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState(null);
 
   useEffect(() => {
-    if (!user) return;
+    loadAssigned();
+  }, []);
 
-    apiFetch("http://localhost:4000/api/incidencias")
-      .then(setAssigned)
-      .catch(err => console.error(err));
-  }, [user]);
+  /* =========================
+     CARGAR INCIDENCIAS ASIGNADAS
+  ========================== */
+  async function loadAssigned() {
+    try {
+      const data = await apiFetch("/incidencias/mis-asignadas");
+      setAssigned(data);
+    } catch (err) {
+      console.error("Error cargando incidencias:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /* =========================
+     ACTUALIZAR ESTADO
+  ========================== */
+  async function updateEstado(id, estado) {
+    setUpdatingId(id);
+
+    try {
+      await apiFetch(`/incidencias/${id}/estado`, {
+        method: "PUT",
+        body: JSON.stringify({ estado }),
+      });
+
+      loadAssigned();
+    } catch (err) {
+      alert(err.error || "Error actualizando estado");
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  if (loading) {
+    return <p className="page">Cargando incidencias...</p>;
+  }
 
   return (
     <section className="page">
@@ -45,19 +79,40 @@ export default function TechnicianBoard() {
                 <td>{row.titulo}</td>
                 <td>{row.prioridad}</td>
                 <td>{row.fecha}</td>
-                <td>{row.estado}</td>
+
                 <td>
-                  <button className="btn-small">Actualizar</button>
+                  <span
+                    className={`estado estado-${row.estado
+                      .toLowerCase()
+                      .replace(" ", "-")}`}
+                  >
+                    {row.estado}
+                  </span>
+                </td>
+
+                <td>
+                  <select
+                    disabled={updatingId === row.id}
+                    value={row.estado}
+                    onChange={(e) =>
+                      updateEstado(row.id, e.target.value)
+                    }
+                  >
+                    <option value="Asignada">Asignada</option>
+                    <option value="En progreso">En progreso</option>
+                    <option value="Resuelta">Resuelta</option>
+                  </select>
                 </td>
               </tr>
             ))}
 
-            {/* Relleno visual */}
-            {Array.from({ length: 4 }).map((_, i) => (
-              <tr key={"empty-" + i}>
-                <td colSpan="7">&nbsp;</td>
+            {assigned.length === 0 && (
+              <tr>
+                <td colSpan="7" style={{ textAlign: "center" }}>
+                  No tienes incidencias asignadas
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
